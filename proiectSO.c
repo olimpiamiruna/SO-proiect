@@ -161,14 +161,12 @@ int main(int argc, char **argv)
 
     size = read(fd,buffer,18); //citesc informatii de care nu am nevoie
 
-    size = read(fd, &width, 4); // Citesc dimensiunea latimii
-    sprintf(buffer, "latime: %d\n", width);
-    write(fo, buffer, strlen(buffer));
+    size = read(fd,&width,4); //citesc intr-un int dimensiunea latimiii
+    sprintf(buffer, "latime: %d\n",width);
+    write(fo,buffer, strlen(buffer));
 
-    size = read(fd, &height, 4); // Citesc dimensiunea înălțimii
-    sprintf(buffer, "inaltime: %d\n", height);
-    write(fo, buffer, strlen(buffer));
-
+    size = read(fd,&height,4); //si a inaltimii
+    write(fo,buffer, strlen(buffer));
 
     struct stat fileStat;
     if (fstat(fd,&fileStat) == -1 )
