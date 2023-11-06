@@ -1,0 +1,4 @@
+latime=4
+inaltime=4
+dimensiune fisier =7372938
+identificator utilizator =1000
