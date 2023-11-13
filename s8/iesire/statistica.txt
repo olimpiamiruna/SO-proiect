@@ -1,0 +1,4 @@
+imagine.bmp
+latime: 1920
+inaltime: 1280
+
