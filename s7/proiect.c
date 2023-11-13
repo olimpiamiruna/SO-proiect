@@ -177,9 +177,13 @@ int main(int argc, char *argv[]) {
                 if (stat(entry->d_name, &targetStat) == 0) {
                     sprintf(buffer, "Dimensiune fisier target: %ld\n", (long)targetStat.st_size);
                     write(fo, buffer, strlen(buffer));
+                    writePermission("user",fo,dirStat);
+                    writePermission("grup",fo,dirStat);
+                    writePermission("altii",fo,dirStat);
                 } else {
                     perror("Eroare la obtinerea informatiilor despre fisierul target");
                 }
+                 write(fo,"\n",1);
             }
 
             if(entry->d_type == DT_DIR )
