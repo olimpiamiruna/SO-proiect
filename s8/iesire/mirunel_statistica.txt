@@ -1,0 +1,5 @@
+nume director:  mirunel
+identificator utilizator: 1000
+Drepturi de acces user: RWX
+Drepturi de acces pentru grup: RWX
+Drepturi de acces altii: R-X
