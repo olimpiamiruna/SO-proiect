@@ -48,152 +48,155 @@ void chDir(const char *dir) {
     }
 }
 
-void writePermission(char pers[10],int fo, struct stat fileStat)
+void writePermission(int fo, struct stat fileStat)
 {
     char buffer[128];
-    if(strcmp(pers, "user")==0){
-        sprintf(buffer, "Drepturi de acces user: ");
-    write(fo, buffer, strlen(buffer));
+    sprintf(buffer, "Drepturi de acces user: ");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-    if (fileStat.st_mode & S_IRUSR){
+    if (fileStat.st_mode & S_IRUSR)
         sprintf(buffer, "R");
-    }
     else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     if (fileStat.st_mode & S_IWUSR)
         sprintf(buffer, "W");
     else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
      if (fileStat.st_mode & S_IXUSR)
         sprintf(buffer, "X\n");
      else sprintf(buffer, "-\n");
-    write(fo, buffer, strlen(buffer));
-    }
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    sprintf(buffer, "Drepturi de acces pentru grup: ");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    if (fileStat.st_mode & S_IRGRP){
+        sprintf(buffer, "R");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IWGRP){
+        sprintf(buffer, "W");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IXGRP)
+        sprintf(buffer, "X\n");
     else
-        if(strcmp(pers,"grup")==0){
-            sprintf(buffer, "Drepturi de acces pentru grup: ");
-        write(fo, buffer, strlen(buffer));
-        if (fileStat.st_mode & S_IRGRP){
-            sprintf(buffer, "R");
-        }else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IWGRP){
-            sprintf(buffer, "W");
-        }else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IXGRP){
-            sprintf(buffer, "X\n");
-        }
-        else {
-            sprintf(buffer, "-\n");
-        }
-        write(fo, buffer, strlen(buffer));
-    }if(strcmp(pers,"altcineva")==0){
+        sprintf(buffer, "-\n");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     sprintf(buffer, "Drepturi de acces altii: ");
-    write(fo, buffer, strlen(buffer));
+   if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     if (fileStat.st_mode & S_IROTH){
         sprintf(buffer, "R");
     }else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     if (fileStat.st_mode & S_IWOTH){
         sprintf(buffer, "W");
     }else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
      if (fileStat.st_mode & S_IXOTH){
         sprintf(buffer, "X\n");
     } else sprintf(buffer, "-\n");
-    write(fo, buffer, strlen(buffer));
-    }
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 }
-
-
-
-int writeImgDtls(int input, char *outName, struct stat fileStat, char *name, char* iDir, char* oDir)
-{
+int writeImgDtls(char *outName, struct stat fileStat, char *name, char *iDir, char *oDir) {
     int nrScrieri = 0;
     char buffer[1024];
-    int size, width, height;
 
     chDir("..");
     chDir(oDir);
 
-    int fo = open(outName,O_RDWR);
-    if(fo==-1) {
-        printf("fisierul %s nu exista\nvom crea fisierul\n", outName);
-        fo = creat(outName, S_IRUSR | S_IWUSR | S_IXUSR);
-        if(fo ==-1) {
-            perror("fisierul nu s-a putut crea");
-            return 0;
-        }
-        else {
-            printf("fisierul %s a fost creat cu succes!\n\n", outName);
-        }
-    }
-
-    char useless[1024];
-    size = read(input, useless, 18);
+    int fo = open(outName, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
+    if (fo == -1)
+        eroare("Eroare la deschiderea sau crearea fisierului");
 
     sprintf(buffer, "nume fisier:  %s\n", name);
-    write(fo, buffer, strlen(buffer));
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
-    // Citeste dimensiunea latimii
-    size = read(fo, &width, 4);
-    sprintf(buffer, "latime: %d\n", width);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
-
-    // Citeste dimensiunea înălțimii
-    size = read(fo, &height, 4);
-    sprintf(buffer, "inaltime: %d\n", height);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
-
-
-    if(fstat(fo, &fileStat) == -1)
-        eroare("nu s a citit dimensiunea fisierului\n");
-
-
+    // Adaugă informațiile specifice imaginii
     sprintf(buffer, "dimensiune fisier: %ld\n", fileStat.st_size);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
+    // Identificatorul utilizatorului
     sprintf(buffer, "identificator utilizator: %d\n", fileStat.st_uid);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-
-  // Timpul ultimei modificări
+    // Timpul ultimei modificări
     sprintf(buffer, "timpul ultimei modificari: %ld\n", fileStat.st_mtime);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-     // Contorul de legături
+    // Contorul de legături
     sprintf(buffer, "contorul de legaturi: %ld\n", fileStat.st_nlink);
-    write(fo, buffer, strlen(buffer));
-    nrScrieri++;
-
-    writePermission("user",fo,fileStat);
-
-    writePermission("grup",fo,fileStat);
-
-    writePermission("altcineva",fo,fileStat);
-    nrScrieri = nrScrieri + 3;
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     chDir("..");
     chDir(iDir);
 
+    // Deschide fișierul original pentru citire
+    int fi = open(name, O_RDONLY);
+    if (fi == -1)
+        eroare("Eroare la deschiderea fisierului original pentru citire");
+
+
+    if (read(fi, buffer, 18) == -1)
+        eroare("eroare la citirea informatiilor nesemnificative");
+
+    int width, height;
+
+    // Citeste dimensiunea latimii
+    if (read(fi, &width, 4) == -1)
+        eroare("eroare la citirea latimii");
+
+    sprintf(buffer, "latime: %d\n", width);
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    nrScrieri++;
+
+    // Citeste dimensiunea înălțimii
+    if (read(fi, &height, 4) == -1)
+        eroare("eroare la citirea inaltimii");
+
+    sprintf(buffer, "inaltime: %d\n", height);
+    if (write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    nrScrieri++;
+
+    writePermission(fo,fileStat);
+    nrScrieri = nrScrieri + 3;
+
+    if(close(fo) == -1)
+        eroare("eroare inchidere");
+    if(close(fi) == -1)
+        eroare("eroare inchidere");
+
+    chDir("..");
+    chDir(iDir);
 
     return nrScrieri;
 }
-
 
 void convtoGray(struct dirent *array)
 {
@@ -211,15 +214,24 @@ void convtoGray(struct dirent *array)
     long int nrTotalPix = width * height;
     unsigned char pix[3]; //red, green, blue
 
-    for(long int i = 0; i< nrTotalPix;i++)
+    //muta cursorul la inceputul zonelor de pixeli, adica dupa cei 54 de biti din header
+    lseek(fo, 54, SEEK_SET);
+    //SEEK_SET  ->  mutarea cursorului se face relativ la inceputul fisierului.
+    for(long int i = 0; i< nrTotalPix;i++) //citire pixeli din .bmp
     {
-        read(fo,pix,3);
+        read(fo, pix, sizeof(pix));
+        //se calculeaza valoarea gri
         unsigned char gray = 0.299 * pix[2] + 0.587 * pix[1] + 0.114 * pix[0];
-        memset(pix, gray, sizeof(pix));
-
-        write(fo, pix, 3);
+        //R, G și B sunt suprascrise/inlocuite cu valoarea de gri
+        pix[0] = pix[1] = pix[2] = gray;
+        //revenire la inceputul pixelului curent
+        lseek(fo, -3, SEEK_CUR);
+        //SEEK_CUR  ->  mutarea cursorului se face relativ la pozitia curenta a cursorului.
+        //scriere pixel modificat
+        write(fo, pix, sizeof(pix));
     }
 }
+
 
 int imgPr(int input, struct dirent *array, struct stat entryStat, char* iDir, char* oDir)
 {
@@ -227,14 +239,12 @@ int imgPr(int input, struct dirent *array, struct stat entryStat, char* iDir, ch
     strcpy(statisticaName,array->d_name);
     strcat(statisticaName,"_statistica.txt");
 
-    int nrScrieri = writeImgDtls(input,statisticaName,entryStat,array->d_name,iDir,oDir);
-    if(nrScrieri != 0)
-        printf("detaliile fisierului bmp au fost scrise");
-
+    int nrScrieri = writeImgDtls(statisticaName,entryStat,array->d_name,iDir,oDir);
 
     int pid;
-    if((pid == fork()) < 0 )
+    if ((pid == fork()) < 0 )
         eroare("eroare la crearea procesului secund");
+
     if(pid == 0)
     {
         convtoGray(array);
@@ -278,7 +288,8 @@ int winF(int input, char *outName, struct stat fileStat, char *name, char* iDir,
     }
 
     sprintf(buffer, "nume fisier:  %s\n", name);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
     if(fstat(fo, &fileStat) == -1)
@@ -286,34 +297,32 @@ int winF(int input, char *outName, struct stat fileStat, char *name, char* iDir,
 
 
     sprintf(buffer, "dimensiune fisier: %ld\n", fileStat.st_size);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
     sprintf(buffer, "identificator utilizator: %d\n", fileStat.st_uid);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
 
   // Timpul ultimei modificări
     sprintf(buffer, "timpul ultimei modificari: %ld\n", fileStat.st_mtime);
-    write(fo, buffer, strlen(buffer));
+   if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
      // Contorul de legături
     sprintf(buffer, "contorul de legaturi: %ld\n", fileStat.st_nlink);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
-    writePermission("user",fo,fileStat);
-
-    writePermission("grup",fo,fileStat);
-
-    writePermission("altcineva",fo,fileStat);
+    writePermission(fo,fileStat);
     nrScrieri = nrScrieri + 3;
     chDir("..");
     chDir(iDir);
-
-
 
     return nrScrieri;
 }
@@ -359,19 +368,16 @@ int WinDir(char *outName, struct stat fileStat, char *name, char* iDir, char* oD
     }
 
     sprintf(buffer, "nume director:  %s\n", name);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
     sprintf(buffer, "identificator utilizator: %d\n", fileStat.st_uid);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
-
-
-    writePermission("user",fo,fileStat);
-
-    writePermission("grup",fo,fileStat);
-
-    writePermission("altcineva",fo,fileStat);
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri = nrScrieri + 3;
 
     chDir("..");
@@ -416,27 +422,22 @@ int WinSymLink(char *outName, struct stat fileStat, struct stat targetStat, char
     }
 
     sprintf(buffer, "nume legatura:  %s\n", name);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
     sprintf(buffer, "dimensiune legatura: %ld\n", fileStat.st_size);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
-
 
     sprintf(buffer, "dimensiune fisier target : %ld\n", targetStat.st_size);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     nrScrieri++;
 
-
-    writePermission("user",fo,fileStat);
-
-    writePermission("grup",fo,fileStat);
-
-    writePermission("altcineva",fo,fileStat);
+    writePermission(fo,fileStat);
     nrScrieri = nrScrieri + 3;
-
-
 
     chDir("..");
     chDir(iDir);
@@ -512,9 +513,7 @@ int main(int argc, char *argv[]) {
             if(entryVect[i]->d_type == DT_REG){
                 printf("fisier\n");
                 if (strcmp(FileSuffix(entryVect[i]->d_name), ".bmp") == 0){
-                    // printf("imagineeeee\n");
                     nrofWLines = imgPr(fileOut,entryVect[i],entryStat,argv[1],argv[2]);
-                     // printf("\naloalo %d\n",nrofWLines);
                 }
                 else
                 {
@@ -525,7 +524,6 @@ int main(int argc, char *argv[]) {
 
             if(entryVect[i]->d_type == DT_DIR)
             {
-                // printf("director");
                 nrofWLines = writeDirPerm(entryVect[i], entryStat, argv[1], argv[2]);
             }
 
@@ -534,28 +532,28 @@ int main(int argc, char *argv[]) {
                 printf("symlinl");
                 nrofWLines = writeSymLinkPerm(entryVect[i], entryStat, argv[1], argv[2]);
             }
-
-
-            // exit(0);
         exit(nrofWLines);
         }
+    }
 
-        if ( waitpid(pid[i], &status, 0) == -1 )
-            exit(-1);
-
+    for(int j = 0; j < intrari; j++) {
+        if ( waitpid(pid[j], &status, 0) == -1 ) {
+            perror("waitpid failed");
+            return EXIT_FAILURE;
+        }
         if ( WIFEXITED(status) ) {
             const int exit_status = WEXITSTATUS(status);
-            nrScrieriVect[i] = exit_status;
-         }
-
+            nrScrieriVect[j] = exit_status;
+        }
+    }
          printf("S-a încheiat procesul cu pid-ul %d și codul %d\n", pid[i], nrScrieriVect[i]);
 
-    }
+
 
 
      for(i = 0; i < intrari; i++) {
         printf("proces %d: nr scrieri fisier %s = %d\n", pid[i], entryVect[i]->d_name, nrScrieriVect[i]);
-    }
+     }
 
 
     if(closedir(dir) == -1)
@@ -563,6 +561,7 @@ int main(int argc, char *argv[]) {
 
     if(closedir(outDir) == -1)
         eroare("directorul nu s-a putut inchide");
+
 
     return 0;
 }

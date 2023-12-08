@@ -1,10 +1,10 @@
 nume fisier:  imagine.bmp
-latilatime: 1769234796
-dimeinaltime: 1701669220
-dimensiune fisier: 282
+dimensiune fisier: 11118570
 identificator utilizator: 1000
-timpul ultimei modificari: 1700935736
+timpul ultimei modificari: 1702060915
 contorul de legaturi: 1
-Drepturi de acces user: RWX
-Drepturi de acces pentru grup: ---
-Drepturi de acces altii: ---
+latime: 1920
+inaltime: 1280
+Drepturi de acces user: RW-
+Drepturi de acces pentru grup: RW-
+Drepturi de acces altii: R--
