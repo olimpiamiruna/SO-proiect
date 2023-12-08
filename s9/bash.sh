@@ -5,14 +5,17 @@ fi
 
 contor=0
 
-#Pentru a căuta un anumit tipar la începutul liniei, se poate folosi caracterul '^'. Pentru a căuta anumite informații la finalul liniei, ne putem folosi de simbolul '$'.
-
-while read  line
-do
-  if echo "$line" | grep -E '^[A-Z][A-Za-z,?!\. ]*' | grep -v ', si' | grep -E '(\?|\!|\.)$'; then
-    contor=$((contor+1))
+while read line
+  do
+  if echo "$line" | grep '^[A-Z][A-Za-z,?!\. ]*' | grep -v ', si' | grep -E '(\?|\!|\.)$'
+  then
+    ((contor++))
   fi
 
-done
 
+done
 echo $contor
+
+
+
+
