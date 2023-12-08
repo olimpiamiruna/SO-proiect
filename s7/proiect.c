@@ -27,6 +27,20 @@ const char *FileSuffix(const char path[]) {
     return result;
 }
 
+void chDir(const char *dir) {
+    char cwd[PATH_MAX]; // director curent
+
+    if (chdir(dir) != 0) {
+        perror("Eroare la schimbarea directorului");
+        exit(-1);
+    }
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        perror("Eroare la obținerea directorului curent");
+        exit(-1);
+    }
+}
+
 void writeFileInfo(int fo, const char *filePath) {
     char buffer[1024];
     int size, width, height;
@@ -44,85 +58,114 @@ void writeFileInfo(int fo, const char *filePath) {
     // Citeste dimensiunea latimii
     size = read(fd, &width, 4);
     sprintf(buffer, "latime: %d\n", width);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     // Citeste dimensiunea înălțimii
     size = read(fd, &height, 4);
     sprintf(buffer, "inaltime: %d\n", height);
-    write(fo, buffer, strlen(buffer));
-
-    // Închide fișierul
-    if(close(fd) == -1 )
-    {
-    eroare("fisierul nu s-a putut inchide");
-    }
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 }
 
-
-
-void writePermission(char pers[10], int fo, struct stat fileStat) {
+void afisareInf(int fo, struct stat fileStat)
+{
     char buffer[128];
-    if (strcmp(pers, "user") == 0) {
-        sprintf(buffer, "Drepturi de acces user: ");
-        write(fo, buffer, strlen(buffer));
+    sprintf(buffer, "dimensiune fisier: %ld\n", fileStat.st_size);
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-        if (fileStat.st_mode & S_IRUSR) {
-            sprintf(buffer, "R");
-        } else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
+    // Identificatorul utilizatorului
+    sprintf(buffer, "identificator utilizator: %d\n", fileStat.st_uid);
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-        if (fileStat.st_mode & S_IWUSR)
-            sprintf(buffer, "W");
-        else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
+    // Timpul ultimei modificări
+    sprintf(buffer, "timpul ultimei modificari: %ld\n", fileStat.st_mtime);
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-        if (fileStat.st_mode & S_IXUSR)
-            sprintf(buffer, "X\n");
-        else sprintf(buffer, "-\n");
-        write(fo, buffer, strlen(buffer));
-    } else if (strcmp(pers, "grup") == 0) {
-        sprintf(buffer, "Drepturi de acces pentru grup: ");
-        write(fo, buffer, strlen(buffer));
-        if (fileStat.st_mode & S_IRGRP) {
-            sprintf(buffer, "R");
-        } else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
+    // Contorul de legături
+    sprintf(buffer, "contorul de legaturi: %ld\n", fileStat.st_nlink);
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-        if (fileStat.st_mode & S_IWGRP) {
-            sprintf(buffer, "W");
-        } else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IXGRP) {
-            sprintf(buffer, "X\n");
-        } else {
-            sprintf(buffer, "-\n");
-        }
-        write(fo, buffer, strlen(buffer));
-    } else{
-
-        sprintf(buffer, "Drepturi de acces altii: ");
-        write(fo, buffer, strlen(buffer));
-        if (fileStat.st_mode & S_IROTH) {
-            sprintf(buffer, "R");
-        } else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IWOTH) {
-            sprintf(buffer, "W");
-        } else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IXOTH) {
-            sprintf(buffer, "X\n");
-        } else sprintf(buffer, "-\n");
-        write(fo, buffer, strlen(buffer));
-    }
 }
+
+
+void writePermission(int fo, struct stat fileStat)
+{
+    char buffer[128];
+    sprintf(buffer, "Drepturi de acces user: ");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IRUSR)
+        sprintf(buffer, "R");
+    else sprintf(buffer, "-");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IWUSR)
+        sprintf(buffer, "W");
+    else sprintf(buffer, "-");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+     if (fileStat.st_mode & S_IXUSR)
+        sprintf(buffer, "X\n");
+     else sprintf(buffer, "-\n");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    sprintf(buffer, "Drepturi de acces pentru grup: ");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    if (fileStat.st_mode & S_IRGRP){
+        sprintf(buffer, "R");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IWGRP){
+        sprintf(buffer, "W");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IXGRP)
+        sprintf(buffer, "X\n");
+    else
+        sprintf(buffer, "-\n");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    sprintf(buffer, "Drepturi de acces altii: ");
+   if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    if (fileStat.st_mode & S_IROTH){
+        sprintf(buffer, "R");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IWOTH){
+        sprintf(buffer, "W");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+     if (fileStat.st_mode & S_IXOTH){
+        sprintf(buffer, "X\n");
+    } else sprintf(buffer, "-\n");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+}
+
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        eroare("nu sunt destule argumente!");
+        eroare("usage ./program <director_intrare>\n");
     }
 
     DIR *dir = opendir(argv[1]);
@@ -135,88 +178,92 @@ int main(int argc, char *argv[]) {
         eroare("Eroare la deschiderea fisierului de statistica");
     }
 
-    struct stat dirStat;
-    if (fstat(dirfd(dir), &dirStat) == -1) {
-        closedir(dir);
-        close(fo);
-        eroare("eroare");
-    }
 
     char buffer[1024];
+    struct stat entryStat;
+
+    chDir(argv[1]);
+
+
     struct dirent *entry = readdir(dir);
     while (entry != NULL) {
-          //  write(fo,"\n",1);
-           // write(fo, entry->d_name, strlen(entry->d_name));
-            if (strcmp(FileSuffix(entry->d_name), ".bmp") == 0){
-                write(fo, entry->d_name, strlen(entry->d_name));
-                write(fo,"\n",1);
-                writeFileInfo(fo, entry->d_name);
-                writePermission("user",fo,dirStat);
-                writePermission("grup",fo,dirStat);
-                writePermission("altii",fo,dirStat);
-                write(fo,"\n",1);
-            }
-
-            if(entry->d_type == DT_LNK)
-            {
-                //printf("legatura simbolica!!!!\n");
-                char buffer[1024];
-                write(fo, entry->d_name, strlen(entry->d_name));
-
-                struct stat linkStat;
-                if (lstat(entry->d_name, &linkStat) == -1) {
-                    perror("Eroare la obținerea informațiilor despre legătură");
-                    
-                }
-
-                sprintf(buffer, "Dimensiune legatura: %ld\n", (long)linkStat.st_size);
-                write(fo, buffer, strlen(buffer));
-                write(fo,"\n",1);
-
-                struct stat targetStat;
-                if (stat(entry->d_name, &targetStat) == 0) {
-                    sprintf(buffer, "Dimensiune fisier target: %ld\n", (long)targetStat.st_size);
-                    write(fo, buffer, strlen(buffer));
-                    writePermission("user",fo,dirStat);
-                    writePermission("grup",fo,dirStat);
-                    writePermission("altii",fo,dirStat);
-                } else {
-                    perror("Eroare la obtinerea informatiilor despre fisierul target");
-                }
-                 write(fo,"\n",1);
-            }
-
-            if(entry->d_type == DT_DIR )
-            {
-             //   printf("director !!!!\n");
-
-                write(fo, entry->d_name, strlen(entry->d_name));
-                write(fo,"\n",1);
-                sprintf(buffer, "identificator utilizator: %d\n", dirStat.st_uid);
-                write(fo, buffer, strlen(buffer));
-                writePermission("user",fo,dirStat);
-                writePermission("grup",fo,dirStat);
-                writePermission("altii",fo,dirStat);
-
-                write(fo,"\n",1);
-            }
-
-            if(entry->d_type == DT_REG )
-            {
-
-                //fisier obisnuit, deci nu se scrie nimic in statistica!!!!
-            }
-
-
-        entry = readdir(dir);
+    if ((lstat(entry->d_name, &entryStat)) == -1) {
+        eroare("eroare la verificarea fisierelor de tip symbolic link");
     }
 
-    if(closedir(dir) == -1) {
-    eroare("directorul nu s-a putut inchide");
-  }
-  if(close(fo) == -1) {
-    eroare("fisierul nu s-a putut inchide");
-  }
+    if (entry->d_type == DT_REG || entry->d_type == DT_DIR) {
+
+        if (write(fo, entry->d_name, strlen(entry->d_name)) == -1)
+            eroare("eroare la scriere");
+        write(fo, "\n", 1);
+
+        if (entry->d_type == DT_REG) {
+            // Este un fișier obișnuit
+            if (strcmp(FileSuffix(entry->d_name), ".bmp") == 0) {
+                writeFileInfo(fo, entry->d_name);
+                afisareInf(fo, entryStat);
+                writePermission(fo, entryStat);
+                write(fo, "\n", 1);
+            } else {
+                afisareInf(fo, entryStat);
+                writePermission(fo, entryStat);
+                write(fo, "\n", 1);
+            }
+        } else if (entry->d_type == DT_DIR) {
+
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                entry = readdir(dir);
+                write(fo, "\n", 1);
+                continue;
+            }
+
+            sprintf(buffer, "Nume director: %s\n", entry->d_name);
+            if (write(fo, buffer, strlen(buffer)) == -1)
+                eroare("eroare la scriere");
+            sprintf(buffer, "identificator utilizator: %d\n", entryStat.st_uid);
+            if (write(fo, buffer, strlen(buffer)) == -1)
+                eroare("eroare la scriere");
+            writePermission(fo, entryStat);
+            write(fo, "\n", 1);
+        }
+        else
+            if(entry->d_type == DT_LNK)
+            {
+
+                if(write(fo, entry->d_name, strlen(entry->d_name)) == -1)
+                    eroare("eroare la scriere");
+
+                struct stat linkStat;
+                //transforma calea relativa in cale absoluta
+                char *r = realpath(entry->d_name, buffer); //r contine adresa bufferului ce contine calea absoluta
+                //obtinere informatii despre calea absoluta
+                stat(r, &linkStat);
+
+
+                sprintf(buffer, "Dimensiune legatura: %ld\n", (long)linkStat.st_size);
+                if (write(fo, buffer, strlen(buffer)) == -1)
+                eroare("eroare la scriere");
+                write(fo,"\n",1);
+
+                sprintf(buffer, "Dimensiune fisier target: %ld\n", (long)linkStat.st_size);
+                if (write(fo, buffer, strlen(buffer)) == -1)
+                    eroare("eroare la scriere");
+                writePermission(fo,entryStat);
+                write(fo,"\n",1);
+            }
+
+    }
+
+    entry = readdir(dir);
+}
+
+
+    if(closedir(dir) == -1)
+        eroare("Directorul nu s-a putut inchide");
+
+    if(close(fo) == -1)
+        eroare("Fisierul nu s-a putut inchide");
+
    
 
     return 0;

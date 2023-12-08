@@ -1,25 +1,30 @@
 e
+Nume director: e
 identificator utilizator: 1000
 Drepturi de acces user: RWX
 Drepturi de acces pentru grup: RWX
 Drepturi de acces altii: R-X
 
 .
-identificator utilizator: 1000
-Drepturi de acces user: RWX
-Drepturi de acces pentru grup: RWX
-Drepturi de acces altii: R-X
 
 imagine.bmp
 latime: 1920
 inaltime: 1280
-Drepturi de acces user: RWX
-Drepturi de acces pentru grup: RWX
-Drepturi de acces altii: R-X
+dimensiune fisier: 7372938
+identificator utilizator: 1000
+timpul ultimei modificari: 1699254973
+contorul de legaturi: 1
+Drepturi de acces user: RW-
+Drepturi de acces pentru grup: RW-
+Drepturi de acces altii: R--
+
+note.txt
+dimensiune fisier: 6
+identificator utilizator: 1000
+timpul ultimei modificari: 1699705056
+contorul de legaturi: 1
+Drepturi de acces user: RW-
+Drepturi de acces pentru grup: RW-
+Drepturi de acces altii: R--
 
 ..
-identificator utilizator: 1000
-Drepturi de acces user: RWX
-Drepturi de acces pentru grup: RWX
-Drepturi de acces altii: R-X
-
