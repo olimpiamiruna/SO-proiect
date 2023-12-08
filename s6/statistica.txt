@@ -6,8 +6,5 @@ identificator utilizator: 1000
 timpul ultimei modificari: 1699254973
 contorul de legaturi: 1
 Drepturi de acces user: RW-
-
-Drepturi de acces pentru grup: RW-
-
+Drepturi de acces grup: RW-
 Drepturi de acces altii: R--
-

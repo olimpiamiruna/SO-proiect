@@ -6,6 +6,12 @@
 #include <ctype.h>
 #include <sys/stat.h>
 
+void eroare(const char *message) {
+    perror(message);
+    exit(-1);
+}
+
+
 const char *FileSuffix(const char path[]) {
     const char *result;
     int n = strlen(path);
@@ -25,87 +31,94 @@ void afisareInf(int fo, struct stat fileStat)
 {
     char buffer[128];
     sprintf(buffer, "dimensiune fisier: %ld\n", fileStat.st_size);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
 
     // Identificatorul utilizatorului
     sprintf(buffer, "identificator utilizator: %d\n", fileStat.st_uid);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     // Timpul ultimei modificări
     sprintf(buffer, "timpul ultimei modificari: %ld\n", fileStat.st_mtime);
-    write(fo, buffer, strlen(buffer));
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     // Contorul de legături
     sprintf(buffer, "contorul de legaturi: %ld\n", fileStat.st_nlink);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
 }
 
-
-
-void writePermission(char pers[10],int fo, struct stat fileStat)
+void writePermission(int fo, struct stat fileStat)
 {
     char buffer[128];
-    if(strcmp(pers, "user")==0){
-        sprintf(buffer, "Drepturi de acces user: ");
-    write(fo, buffer, strlen(buffer));
+    sprintf(buffer, "Drepturi de acces user: ");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
-    if (fileStat.st_mode & S_IRUSR){
+    if (fileStat.st_mode & S_IRUSR)
         sprintf(buffer, "R");
-    }
     else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     if (fileStat.st_mode & S_IWUSR)
         sprintf(buffer, "W");
     else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
      if (fileStat.st_mode & S_IXUSR)
         sprintf(buffer, "X\n");
      else sprintf(buffer, "-\n");
-    write(fo, buffer, strlen(buffer));
-    }
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    sprintf(buffer, "Drepturi de acces grup: ");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+    if (fileStat.st_mode & S_IRGRP){
+        sprintf(buffer, "R");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IWGRP){
+        sprintf(buffer, "W");
+    }else sprintf(buffer, "-");
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
+
+    if (fileStat.st_mode & S_IXGRP)
+        sprintf(buffer, "X\n");
     else
-        if(strcmp(pers,"grup")==0){
-            sprintf(buffer, "Drepturi de acces pentru grup: ");
-        write(fo, buffer, strlen(buffer));
-        if (fileStat.st_mode & S_IRGRP){
-            sprintf(buffer, "R");
-        }else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IWGRP){
-            sprintf(buffer, "W");
-        }else sprintf(buffer, "-");
-        write(fo, buffer, strlen(buffer));
-
-        if (fileStat.st_mode & S_IXGRP){
-            sprintf(buffer, "X\n");
-        }
-        else {
-            sprintf(buffer, "-\n");
-        }
-        write(fo, buffer, strlen(buffer));
-    }if(strcmp(pers,"altcineva")==0){
+        sprintf(buffer, "-\n");
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     sprintf(buffer, "Drepturi de acces altii: ");
-    write(fo, buffer, strlen(buffer));
+   if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
     if (fileStat.st_mode & S_IROTH){
         sprintf(buffer, "R");
     }else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     if (fileStat.st_mode & S_IWOTH){
         sprintf(buffer, "W");
     }else sprintf(buffer, "-");
-    write(fo, buffer, strlen(buffer));
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
      if (fileStat.st_mode & S_IXOTH){
         sprintf(buffer, "X\n");
     } else sprintf(buffer, "-\n");
-    write(fo, buffer, strlen(buffer));
-    }
+     if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 }
 
 int main(int argc, char **argv)
@@ -157,17 +170,20 @@ int main(int argc, char **argv)
 
     //scriere numele fisierului
     sprintf(buffer, "nume fisier:  %s\n", argv[1]);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     size = read(fd,buffer,18); //citesc informatii de care nu am nevoie
 
     size = read(fd, &width, 4); // Citesc dimensiunea latimii
     sprintf(buffer, "latime: %d\n", width);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
     size = read(fd, &height, 4); // Citesc dimensiunea înălțimii
     sprintf(buffer, "inaltime: %d\n", height);
-    write(fo, buffer, strlen(buffer));
+    if(write(fo, buffer, strlen(buffer)) == -1)
+        eroare("eroare la scriere");
 
 
     struct stat fileStat;
@@ -179,12 +195,12 @@ int main(int argc, char **argv)
 
     afisareInf(fo, fileStat);
 
-    writePermission("user",fo,fileStat);
+    writePermission(fo,fileStat);
 
-    writePermission("grup",fo,fileStat);
-
-    writePermission("altcineva",fo,fileStat);
-
+    if(close(fo) == -1)
+        eroare("fisierul nu s-a putut inchide");
+    if(close(fd) == -1)
+        eroare("fisierul nu s-a putut inchide");
 
  return 0;
 }
